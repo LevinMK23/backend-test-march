@@ -1,17 +1,24 @@
 package com.geekbrains.spoonaccular;
 
 import com.geekbrains.BaseTest;
+import com.geekbrains.spoonaccular.model.RecipesSearchResponse;
+import com.geekbrains.spoonaccular.model.RecipesSearchResponseItem;
 import io.restassured.RestAssured;
-import io.restassured.specification.ResponseSpecification;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.builder.ResponseSpecBuilder;
 import net.javacrumbs.jsonunit.JsonAssert;
-import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.io.IOException;
+import java.net.URL;
+import java.util.Locale;
 
 import static net.javacrumbs.jsonunit.core.Option.IGNORING_ARRAY_ORDER;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.lessThan;
 
 public class SpoonAccularApiTest extends BaseTest {
 
@@ -20,14 +27,23 @@ public class SpoonAccularApiTest extends BaseTest {
 
     @BeforeAll
     static void beforeAll() {
+
         RestAssured.baseURI = BASE_URL;
+
+        RestAssured.requestSpecification = new RequestSpecBuilder()
+                .addQueryParam("apiKey", API_KEY)
+                .build();
+
+        RestAssured.responseSpecification = new ResponseSpecBuilder()
+                .expectStatusCode(200)
+                .expectResponseTime(lessThan(1000L))
+                .build();
     }
 
     @Test
     void testGetComplexSearch() throws IOException {
 
         String actually = RestAssured.given()
-                .queryParam("apiKey", API_KEY)
                 .queryParam("query", "pasta")
                 .queryParam("cuisine", "italian")
                 .log()
@@ -35,12 +51,6 @@ public class SpoonAccularApiTest extends BaseTest {
                 .expect()
                 .log()
                 .body()
-                .statusCode(200)
-                .time(lessThan(1000L))
-                .body("results[0].id", Matchers.notNullValue())
-                .body("offset", is(0))
-                .body("number", is(10))
-                .body("totalResults", is(127))
                 .when()
                 .get("recipes/complexSearch")
                 .body()
@@ -53,6 +63,33 @@ public class SpoonAccularApiTest extends BaseTest {
                 actually,
                 JsonAssert.when(IGNORING_ARRAY_ORDER)
         );
+
+    }
+
+    @Test
+    void testGetComplexSearchPojo() throws IOException {
+
+        RecipesSearchResponse actually = RestAssured.given()
+                .queryParam("query", "pasta")
+                .queryParam("cuisine", "italian")
+                .log()
+                .uri()
+                .expect()
+                .log()
+                .body()
+                .when()
+                .get("recipes/complexSearch")
+                .body()
+                .as(RecipesSearchResponse.class);
+
+        System.out.println(actually);
+
+        for (RecipesSearchResponseItem item : actually.getResults()) {
+            Assertions.assertNotNull(item.getId());
+            Assertions.assertTrue(item.getTitle().toLowerCase(Locale.ROOT).contains("pasta"));
+            Image image = ImageIO.read(new URL(item.getImage()));
+            Assertions.assertNotNull(image);
+        }
 
     }
 
