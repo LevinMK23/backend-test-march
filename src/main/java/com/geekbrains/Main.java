@@ -52,5 +52,7 @@ public class Main {
         newProducts.forEach(p -> log.info("product new: {}", p));
 
         session.commit();
+
+        log.info("Hello world!");
     }
 }
