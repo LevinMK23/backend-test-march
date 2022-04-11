@@ -53,6 +53,6 @@ public class Main {
 
         session.commit();
 
-        log.info("Hello world!");
+        log.info("Hello world! 1");
     }
 }
