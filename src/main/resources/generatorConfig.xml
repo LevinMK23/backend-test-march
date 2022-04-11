@@ -3,7 +3,7 @@
         "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
 
 <generatorConfiguration>
-    <classPathEntry  location="/Users/mikhail.levin/.m2/repository/org/postgresql/postgresql/42.3.3/postgresql-42.3.3.jar"/>
+    <classPathEntry  location="${user.home}/.m2/repository/org/postgresql/postgresql/42.3.3/postgresql-42.3.3.jar"/>
 
     <context id="DB2Tables" targetRuntime="MyBatis3">
         <jdbcConnection driverClass="org.postgresql.Driver"
